@@ -1,0 +1,103 @@
+{
+  "method": "CAPE",
+  "dataset": "panoradio",
+  "dataset_name": "Panoradio HF",
+  "dataset_type": "panoradio",
+  "data_root": "data/panoradio",
+  "x_file": "dataset_panoradio_hf.npy",
+  "tags_file": "dataset_panoradio_hf_tags.csv",
+  "normalize": true,
+  "input_length": 2048,
+  "known_classes": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+  ],
+  "unknown_classes": [
+    12,
+    13,
+    14,
+    15,
+    16,
+    17
+  ],
+  "channels": [
+    8,
+    16,
+    16,
+    32,
+    32,
+    64,
+    64,
+    128
+  ],
+  "latent_dim": 128,
+  "semantic_dim": 128,
+  "channel_dim": 64,
+  "attention_dim": 128,
+  "attention_heads": 4,
+  "attention_dropout": 0.1,
+  "suppression_strength": 1.0,
+  "classifier_temperature": 0.2,
+  "energy_temperature": 0.2,
+  "etf_seed": 0,
+  "train_ratio": 0.8,
+  "data_seed": 0,
+  "evaluation_seed": 100200,
+  "label_ratio": 0.1,
+  "validation_ratio": 0.2,
+  "target_fpr": 0.05,
+  "epochs": 40,
+  "batch_size": 128,
+  "learning_rate": 0.0003,
+  "weight_decay": 0.0001,
+  "snr_cutpoints": [
+    -7.5,
+    -2.5,
+    2.5,
+    7.5,
+    12.5,
+    17.5,
+    22.5
+  ],
+  "training_loss": "CE(x,y)",
+  "split_file": "protocols/panoradio_split.npz",
+  "perturbations": [
+    {
+      "name": "awgn",
+      "level": 10.0
+    },
+    {
+      "name": "cfo",
+      "level": 0.05
+    },
+    {
+      "name": "phase",
+      "level": 60.0
+    },
+    {
+      "name": "amplitude",
+      "level": 0.7
+    },
+    {
+      "name": "multipath",
+      "level": [
+        4,
+        0.3
+      ]
+    },
+    {
+      "name": "doppler",
+      "level": 0.05
+    }
+  ]
+}

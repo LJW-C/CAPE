@@ -1,0 +1,10 @@
+{
+  "passed": true,
+  "input": "tiny synthetic fixture outside the release",
+  "trained_release_or_real_experiment": false,
+  "training_epochs_on_fixture": 1,
+  "train_cli": true,
+  "predict_cli": true,
+  "six_condition_evaluation": true,
+  "fixture_weights_included_in_release": false
+}

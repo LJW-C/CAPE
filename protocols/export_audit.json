@@ -1,0 +1,106 @@
+{
+  "method": "CAPE",
+  "seeds": [
+    1,
+    2,
+    3
+  ],
+  "datasets": [
+    "panoradio",
+    "hfdigital"
+  ],
+  "weight_files": 3,
+  "trained_new_models": false,
+  "all_model_outputs_exactly_matched_original": true,
+  "all_source_results_matched_raw_scores": true,
+  "sample_standard_deviation_ddof": 1,
+  "audits": [
+    {
+      "dataset": "panoradio",
+      "method": "CAPE",
+      "seed": 1,
+      "completed": true,
+      "loss": "CE(x,y)",
+      "ci_calls": 0,
+      "cisc_calls": 0,
+      "known_only": true,
+      "source_checkpoint_sha256": "18b8fae961b7040b890aac42f296d84de2725c961a938ae5218b220f96594597",
+      "release_checkpoint_sha256": "8287d77cd038a4b542b00e03c4bff157b51286b181517313c94002fa41babd9c",
+      "state_dict_keys": 166,
+      "model_output_max_absolute_errors": [
+        0,
+        0,
+        0
+      ],
+      "weights_only_load_passed": true,
+      "historical_optimizer_included": false,
+      "initialization_scope": "historical encoder initialization is embedded in the final trained weights",
+      "calibration_source": "clean known validation",
+      "samples": 1848,
+      "target_fpr": 0.05,
+      "rejected": 92,
+      "actual_fpr": 0.049783549783549784
+    },
+    {
+      "dataset": "panoradio",
+      "method": "CAPE",
+      "seed": 2,
+      "completed": true,
+      "loss": "CE(x,y)",
+      "ci_calls": 0,
+      "cisc_calls": 0,
+      "known_only": true,
+      "source_checkpoint_sha256": "4327076fb7aa81860dc9ebbec05b8520a58cfa8f4fe2fd70174cf1562ecb87f0",
+      "release_checkpoint_sha256": "24de9774d971f8f1a294fe14953af0d79f748d5507d689c4aebe892c8e1d1790",
+      "state_dict_keys": 166,
+      "model_output_max_absolute_errors": [
+        0,
+        0,
+        0
+      ],
+      "weights_only_load_passed": true,
+      "historical_optimizer_included": false,
+      "initialization_scope": "historical encoder initialization is embedded in the final trained weights",
+      "calibration_source": "clean known validation",
+      "samples": 1848,
+      "target_fpr": 0.05,
+      "rejected": 92,
+      "actual_fpr": 0.049783549783549784
+    },
+    {
+      "dataset": "panoradio",
+      "method": "CAPE",
+      "seed": 3,
+      "completed": true,
+      "loss": "CE(x,y)",
+      "ci_calls": 0,
+      "cisc_calls": 0,
+      "known_only": true,
+      "source_checkpoint_sha256": "e2569fba325f464739dbdd5565315cebdc287066d74ca9a1f1d19560b7507061",
+      "release_checkpoint_sha256": "0232844fff4dadefd3546841a06bce87686347e6f8b981fa08b99ff217e4e975",
+      "state_dict_keys": 166,
+      "model_output_max_absolute_errors": [
+        0,
+        0,
+        0
+      ],
+      "weights_only_load_passed": true,
+      "historical_optimizer_included": false,
+      "initialization_scope": "historical encoder initialization is embedded in the final trained weights",
+      "calibration_source": "clean known validation",
+      "samples": 1848,
+      "target_fpr": 0.05,
+      "rejected": 92,
+      "actual_fpr": 0.049783549783549784
+    }
+  ],
+  "weight_datasets": [
+    "panoradio"
+  ],
+  "publication": {
+    "repository": "https://github.com/LJW-C/CAPE",
+    "visibility": "public",
+    "published_weight_scope": "Panoradio HF seeds 1, 2, 3 only",
+    "hfdigital_weights_published": false
+  }
+}

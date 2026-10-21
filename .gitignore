@@ -1,0 +1,11 @@
+__pycache__/
+*.pyc
+.venv/
+data/**/*.npy
+data/**/*.csv
+evaluation/
+training/
+checkpoints/hfdigital/
+.env
+.env.*
+!.env.example

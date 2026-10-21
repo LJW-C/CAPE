@@ -1,0 +1,22 @@
+{
+  "passed": true,
+  "checks": [
+    {
+      "dataset": "panoradio",
+      "real_loader_bitwise_equal": true,
+      "generated_split_equals_archived_ids": true,
+      "single_ce_step_passed": true,
+      "fixed_etf_unchanged_after_optimizer_step": true,
+      "weights_written_by_test": false
+    },
+    {
+      "dataset": "hfdigital",
+      "real_loader_bitwise_equal": true,
+      "generated_split_equals_archived_ids": true,
+      "single_ce_step_passed": true,
+      "fixed_etf_unchanged_after_optimizer_step": true,
+      "weights_written_by_test": false
+    }
+  ],
+  "scope": "read-only real-data comparisons plus one in-memory CE optimizer step; no experiment trained"
+}

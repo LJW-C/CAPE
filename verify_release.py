@@ -1,0 +1,85 @@
+"""Verify released weights and recompute every archived metric from raw scores."""
+
+import os
+os.environ.setdefault("OMP_NUM_THREADS", "1")
+
+from pathlib import Path
+import json
+import sys
+
+import numpy as np
+import torch
+
+from cape.evaluation import aggregate, percentage_row
+from cape.io import ROOT, read_csv, read_json, load_checkpoint, sha256
+from cape.scoring import (METRICS, calibrate_known, condition_metrics, four_group,
+                          prototype_energy, summarize_conditions)
+
+
+def main():
+    torch.set_num_threads(1)
+    manifest = read_json(ROOT / "protocols/export_audit.json")
+    weight_datasets = manifest.get("weight_datasets", manifest["datasets"])
+    expected_weights = {f"checkpoints/{name}/seed{seed}.pt"
+                        for name in weight_datasets for seed in (1, 2, 3)}
+    actual_weights = {p.relative_to(ROOT).as_posix() for p in (ROOT / "checkpoints").rglob("*.pt")}
+    assert actual_weights == expected_weights, "Unexpected or missing model weights"
+    all_reported = read_csv(ROOT / "results/results_all_seeds.csv")
+    summaries = read_csv(ROOT / "results/results_mean_std.csv")
+    all_recomputed = []
+    for dataset in manifest["datasets"]:
+        recomputed = []
+        for seed in (1, 2, 3):
+            path = ROOT / f"checkpoints/{dataset}/seed{seed}.pt"
+            if dataset in weight_datasets:
+                model, payload = load_checkpoint(path)
+                audit = next(a for a in manifest["audits"] if a["dataset"] == dataset and a["seed"] == seed)
+                assert sha256(path) == audit["release_checkpoint_sha256"]
+                assert payload["seed"] == seed
+                config = payload["config"]
+                with torch.no_grad():
+                    output, semantic, channel = model(torch.randn(2, 2, config["input_length"]))
+                assert output.shape == (2, len(config["known_classes"]))
+                assert semantic.shape == (2, config["semantic_dim"])
+                assert channel.shape == (2, config["channel_dim"])
+                assert not model.classifier.weight.requires_grad
+            else:
+                config = read_json(ROOT / f"configs/{dataset}.json")
+            directory = ROOT / f"results/raw/{dataset}/seed{seed}"
+            with np.load(directory / "validation_scores.npz", allow_pickle=False) as pack:
+                assert np.isin(pack["labels"], config["known_classes"]).all()
+                threshold, _ = calibrate_known(pack["scores"], config["target_fpr"])
+                if dataset in weight_datasets:
+                    assert threshold == payload["threshold"]
+            def measured(filename):
+                with np.load(directory / filename, allow_pickle=False) as pack:
+                    return condition_metrics(pack["labels"], pack["scores"], pack["predicted_local"],
+                                             threshold, config["known_classes"], config["unknown_classes"])
+            clean = measured("clean_scores.npz")
+            conditions = [four_group(clean, measured(f"scores_condition{i}.npz"))
+                          for i in range(len(config["perturbations"]))]
+            row = percentage_row({"dataset": dataset, "seed": seed, **summarize_conditions(clean, conditions)})
+            archived = next(r for r in all_reported if r["dataset"] == dataset and int(r["seed"]) == seed)
+            assert all(abs(row[k] - float(archived[k])) < 1e-9 for k in METRICS)
+            recomputed.append(row)
+            scope = "weights and archived scores" if dataset in weight_datasets else "archived scores (weights not published)"
+            print(f"PASS {dataset} seed {seed}: {scope}, calibration, clean metrics, six-condition H4")
+        computed = aggregate(recomputed)
+        reference = next(r for r in summaries if r["dataset"] == dataset)
+        for key in METRICS:
+            for suffix in ("_mean", "_std"):
+                assert abs(computed[key + suffix] - float(reference[key + suffix])) < 1e-9
+        all_recomputed.extend(recomputed)
+    checksum_file = ROOT / "checksums.sha256"
+    if checksum_file.exists():
+        for line in checksum_file.read_text(encoding="utf-8").splitlines():
+            digest, filename = line.split("  ", 1)
+            assert sha256(ROOT / filename) == digest, f"Changed release file: {filename}"
+    print("PASS: all exported seed tables and sample standard deviations (ddof=1) match raw scores.")
+    assert not any(name == "src" or name.startswith("src.") or name.startswith("scripts.")
+                   for name in sys.modules), "Unexpected original-project import"
+    print("PASS: complete checkpoint states load without any external initializer or original project imports.")
+
+
+if __name__ == "__main__":
+    main()

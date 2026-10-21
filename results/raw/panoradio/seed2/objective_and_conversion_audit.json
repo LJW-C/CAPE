@@ -1,0 +1,25 @@
+{
+  "method": "CAPE",
+  "seed": 2,
+  "completed": true,
+  "loss": "CE(x,y)",
+  "ci_calls": 0,
+  "cisc_calls": 0,
+  "known_only": true,
+  "source_checkpoint_sha256": "4327076fb7aa81860dc9ebbec05b8520a58cfa8f4fe2fd70174cf1562ecb87f0",
+  "release_checkpoint_sha256": "24de9774d971f8f1a294fe14953af0d79f748d5507d689c4aebe892c8e1d1790",
+  "state_dict_keys": 166,
+  "model_output_max_absolute_errors": [
+    0.0,
+    0.0,
+    0.0
+  ],
+  "weights_only_load_passed": true,
+  "historical_optimizer_included": false,
+  "initialization_scope": "historical encoder initialization is embedded in the final trained weights",
+  "calibration_source": "clean known validation",
+  "samples": 1848,
+  "target_fpr": 0.05,
+  "rejected": 92,
+  "actual_fpr": 0.049783549783549784
+}

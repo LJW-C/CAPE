@@ -1,0 +1,17 @@
+{
+  "method": "CAPE",
+  "dataset": "panoradio",
+  "seed": 3,
+  "threshold": -0.8196284174919128,
+  "metric_units": "fraction",
+  "known_acc": 0.8958333333333334,
+  "closed_known_acc": 0.9225260416666666,
+  "unknown_auroc": 0.8211343534493152,
+  "unknown_f1": 0.4198078344419808,
+  "h_score": 0.44478438228438233,
+  "KAR_clean_avg": 0.9432291666666667,
+  "KAR_deg_avg": 0.9108506944444446,
+  "URR_clean_avg": 0.29583333333333334,
+  "URR_deg_avg": 0.33642939814814815,
+  "H4_avg": 0.46806093535735344
+}

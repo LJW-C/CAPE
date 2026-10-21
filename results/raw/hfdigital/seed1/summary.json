@@ -1,0 +1,17 @@
+{
+  "method": "CAPE",
+  "dataset": "hfdigital",
+  "seed": 1,
+  "threshold": -0.8646947741508484,
+  "metric_units": "fraction",
+  "known_acc": 0.6673768939393939,
+  "closed_known_acc": 0.6970643939393939,
+  "unknown_auroc": 0.8093457956025095,
+  "unknown_f1": 0.3377172691824731,
+  "h_score": 0.3329332612232823,
+  "KAR_clean_avg": 0.9500000000000001,
+  "KAR_deg_avg": 0.9156407828282829,
+  "URR_clean_avg": 0.22178819444444445,
+  "URR_deg_avg": 0.24840856481481485,
+  "H4_avg": 0.37324938643832367
+}

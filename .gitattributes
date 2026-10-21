@@ -1,0 +1,6 @@
+# Preserve exact bytes for portable checksums on every platform.
+* -text
+*.pt binary
+*.npz binary
+*.pdf binary
+*.png binary

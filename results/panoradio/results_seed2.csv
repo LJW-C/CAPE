@@ -1,0 +1,2 @@
+﻿dataset,method,seed,metric_units,known_acc,closed_known_acc,unknown_auroc,unknown_f1,h_score,KAR_clean_avg,KAR_deg_avg,URR_clean_avg,URR_deg_avg,H4_avg
+panoradio,CAPE,2,percent,89.97829861111111,92.60850694444444,83.39139264895591,44.5377639827156,46.95077822639745,94.56597222222224,91.04890046296296,31.76215277777778,36.184895833333336,49.361094653082894

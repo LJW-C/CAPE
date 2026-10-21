@@ -1,0 +1,2 @@
+﻿dataset,method,seed,metric_units,known_acc,closed_known_acc,unknown_auroc,unknown_f1,h_score,KAR_clean_avg,KAR_deg_avg,URR_clean_avg,URR_deg_avg,H4_avg
+hfdigital,CAPE,2,percent,66.3873106060606,68.57007575757575,77.28013389921348,24.125604541949958,24.38996239136271,95.14204545454544,92.20486111111111,14.939236111111112,16.986400462962962,27.0305691735522
