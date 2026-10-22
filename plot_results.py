@@ -8,11 +8,32 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
 
-from cape.io import ROOT, read_csv
+from cape.io import ROOT, read_csv, read_json
+from cape.scoring import condition_metrics, four_group
 
 
 PALETTE = {"panoradio": "#0072B2", "hfdigital": "#E64B35"}
 NAMES = {"panoradio": "Panoradio HF", "hfdigital": "HF-Digital"}
+
+
+def perturbation_rows(dataset, seed):
+    path = ROOT / f"results/{dataset}/perturbations_seed{seed}.csv"
+    if path.exists():
+        return read_csv(path)
+    directory = ROOT / f"results/raw/{dataset}/seed{seed}"
+    config = read_json(ROOT / f"configs/{dataset}.json")
+    threshold = read_json(directory / "summary.json")["threshold"]
+
+    def measured(filename):
+        with np.load(directory / filename, allow_pickle=False) as scores:
+            return condition_metrics(
+                scores["labels"], scores["scores"], scores["predicted_local"],
+                threshold, config["known_classes"], config["unknown_classes"])
+
+    clean = measured("clean_scores.npz")
+    return [{"perturbation": condition["name"],
+             **four_group(clean, measured(f"scores_condition{index}.npz"))}
+            for index, condition in enumerate(config["perturbations"])]
 
 
 def style():
@@ -69,7 +90,7 @@ def main():
     metrics = [("KAR_deg", "KAR-deg", "#0072B2", "o"),
                ("URR_deg", "URR-deg", "#E64B35", "s"), ("H4", "H4", "#00A087", "^")]
     for axis, name in zip(axes[0], names):
-        groups = [read_csv(ROOT / f"results/{name}/perturbations_seed{seed}.csv") for seed in (1, 2, 3)]
+        groups = [perturbation_rows(name, seed) for seed in (1, 2, 3)]
         labels = [r["perturbation"] for r in groups[0]]
         if any([r["perturbation"] for r in group] != labels for group in groups):
             raise ValueError("Perturbation order differs across seeds")

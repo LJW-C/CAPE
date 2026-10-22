@@ -22,7 +22,6 @@ CAPE/
     results_mean_std.csv    三种子均值与样本标准差
     results_all_seeds.csv   逐种子完整结果
     panoradio/             分数据集结果、逐扰动结果与训练日志
-    hfdigital/
     raw/                   原始分数和类别预测，用于独立核验
   figures/                 绘图程序生成的 PDF / PNG
   train.py                 CAPE 从头训练
@@ -34,7 +33,7 @@ CAPE/
   requirements.txt
 ```
 
-公开仓库仅提供 **Panoradio HF 的 Seed 1、2、3** 三个 Full CAPE 权重。HF-Digital 保留代码、配置和逐种子结果，未上传其权重。没有保存消融权重、其他方法实现、其他方法权重、预训练代码或独立预训练权重。
+公开仓库仅提供 **Panoradio HF 的 Seed 1、2、3** 三个 Full CAPE 权重。HF-Digital 保留代码、配置、合并汇总表中的结果和原始评分，未上传其权重，且不再提供单独的 `results/hfdigital/` CSV 目录。没有保存消融权重、其他方法实现、其他方法权重、预训练代码或独立预训练权重。
 
 权重只保存模型参数、最终配置、经验原型、阈值和必要来源摘要，不包含优化器和原项目的 Python 模型对象。加载使用 `weights_only=True`，可随整个文件夹迁移。
 
@@ -61,6 +60,8 @@ python -u plot_results.py
 `verify_release.py` 会检查 Panoradio 的三个最终权重，并从两个数据集保存的 clean/degraded 分数重新计算阈值、指标与三种子标准差。它不会训练模型。HF-Digital 的核验针对已保存结果，其权重不在公开仓库中。
 
 绘图默认输出 `figures/fig_cape_seed_results.pdf` 和 `figures/fig_cape_channel_robustness.pdf`，同时保存 PNG。
+
+缺少独立逐扰动 CSV 时，绘图脚本从 `results/raw/` 中保存的评分与阈值读取指标，不会重新训练模型或更改汇总表。
 
 ```powershell
 python -u plot_results.py --dataset panoradio
