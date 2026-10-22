@@ -54,6 +54,8 @@ def main():
     parser.add_argument("--dataset", choices=["all", "panoradio", "hfdigital"], default="all")
     parser.add_argument("--output-dir", type=Path, default=ROOT / "figures")
     args = parser.parse_args()
+    if not (ROOT / "results/results_all_seeds.csv").is_file():
+        parser.error("Result CSVs are not included in this repository. Supply your own local results before plotting.")
     args.output_dir.mkdir(parents=True, exist_ok=True)
     style()
     rows = read_csv(ROOT / "results/results_all_seeds.csv")

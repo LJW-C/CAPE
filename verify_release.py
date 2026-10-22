@@ -24,10 +24,13 @@ def main():
                         for name in weight_datasets for seed in (1, 2, 3)}
     actual_weights = {p.relative_to(ROOT).as_posix() for p in (ROOT / "checkpoints").rglob("*.pt")}
     assert actual_weights == expected_weights, "Unexpected or missing model weights"
-    all_reported = read_csv(ROOT / "results/results_all_seeds.csv")
-    summaries = read_csv(ROOT / "results/results_mean_std.csv")
+    has_results = (ROOT / "results/results_all_seeds.csv").is_file()
+    all_reported = read_csv(ROOT / "results/results_all_seeds.csv") if has_results else []
+    summaries = read_csv(ROOT / "results/results_mean_std.csv") if has_results else []
     all_recomputed = []
     for dataset in manifest["datasets"]:
+        if not has_results and dataset not in weight_datasets:
+            continue
         recomputed = []
         for seed in (1, 2, 3):
             path = ROOT / f"checkpoints/{dataset}/seed{seed}.pt"
@@ -45,6 +48,9 @@ def main():
                 assert not model.classifier.weight.requires_grad
             else:
                 config = read_json(ROOT / f"configs/{dataset}.json")
+            if not has_results:
+                print(f"PASS {dataset} seed {seed}: checkpoint integrity and model forward pass")
+                continue
             directory = ROOT / f"results/raw/{dataset}/seed{seed}"
             with np.load(directory / "validation_scores.npz", allow_pickle=False) as pack:
                 assert np.isin(pack["labels"], config["known_classes"]).all()
@@ -64,6 +70,8 @@ def main():
             recomputed.append(row)
             scope = "weights and archived scores" if dataset in weight_datasets else "archived scores (weights not published)"
             print(f"PASS {dataset} seed {seed}: {scope}, calibration, clean metrics, six-condition H4")
+        if not has_results:
+            continue
         computed = aggregate(recomputed)
         reference = next(r for r in summaries if r["dataset"] == dataset)
         for key in METRICS:
@@ -75,7 +83,10 @@ def main():
         for line in checksum_file.read_text(encoding="utf-8").splitlines():
             digest, filename = line.split("  ", 1)
             assert sha256(ROOT / filename) == digest, f"Changed release file: {filename}"
-    print("PASS: all exported seed tables and sample standard deviations (ddof=1) match raw scores.")
+    if has_results:
+        print("PASS: all exported seed tables and sample standard deviations (ddof=1) match raw scores.")
+    else:
+        print("SKIP: result CSVs and raw scores are not published; metrics were not verified.")
     assert not any(name == "src" or name.startswith("src.") or name.startswith("scripts.")
                    for name in sys.modules), "Unexpected original-project import"
     print("PASS: complete checkpoint states load without any external initializer or original project imports.")
