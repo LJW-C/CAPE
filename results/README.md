@@ -1,13 +1,26 @@
 # CAPE reported results
 
-- Panoradio HF: seeds 1, 2, 3 (existing reported subset).
-- HF-Digital: seeds 1, 3, 6 (post hoc requested subset).
+- Both datasets use filename/display IDs seed1, seed2, seed3.
+- Panoradio HF actual training seeds: 1, 2, 3 (existing reported subset).
+- HF-Digital actual training seeds: 1, 3, 6 (post hoc requested subset).
 - All rows use the known-only, CE-only CAPE method with CFDA, class/SNR sampling,
   fixed ETF classification, and empirical Prototype-Energy rejection. CI and CISC are disabled.
 
+## Display IDs and training seeds
+
+| File/display ID | Panoradio HF training seed | HF-Digital training seed |
+|---|---:|---:|
+| seed1 | 1 | 1 |
+| seed2 | 2 | 3 |
+| seed3 | 3 | 6 |
+
+`run_id` is the filename/display index. `training_seed` is the actual random
+seed used to train the model. Renaming does not retrain a model or change its
+random seed. Provenance records retain actual training seeds.
+
 ## Seed selection
 
-HF-Digital seeds 1, 3, and 6 were requested after results for seeds 1 through 6 had
+HF-Digital training seeds 1, 3, and 6 were requested after results for seeds 1 through 6 had
 been viewed. Seeds 2, 4, and 5 were also completed but are not part of this report.
 This is a descriptive post hoc subset, not a preregistered or unbiased
 random-seed stability estimate. Do not describe these values as results across
@@ -21,15 +34,15 @@ preregistration claim is made for that subset either.
 Values are percentages. Uncertainty is the sample standard deviation (ddof=1)
 over the three listed seeds within each dataset.
 
-| Dataset | Seeds | Known Acc. | AUROC | Unknown F1 | H-score | KAR-deg | URR-deg | Avg. H4 |
-|---|---|---:|---:|---:|---:|---:|---:|---:|
-| Panoradio HF | 1, 2, 3 | 89.76 +/- 0.20 | 82.56 +/- 0.72 | 44.14 +/- 1.99 | 46.57 +/- 1.93 | 91.09 +/- 0.04 | 35.18 +/- 1.35 | 48.71 +/- 1.68 |
-| HF-Digital | 1, 3, 6 | 66.49 +/- 0.31 | 80.78 +/- 0.43 | 34.10 +/- 3.63 | 33.55 +/- 3.21 | 92.00 +/- 0.49 | 24.83 +/- 2.10 | 37.50 +/- 3.22 |
+| Dataset | File IDs | Training seeds | Known Acc. | AUROC | Unknown F1 | H-score | KAR-deg | URR-deg | Avg. H4 |
+|---|---|---|---:|---:|---:|---:|---:|---:|---:|
+| Panoradio HF | 1, 2, 3 | 1, 2, 3 | 89.76 +/- 0.20 | 82.56 +/- 0.72 | 44.14 +/- 1.99 | 46.57 +/- 1.93 | 91.09 +/- 0.04 | 35.18 +/- 1.35 | 48.71 +/- 1.68 |
+| HF-Digital | 1, 2, 3 | 1, 3, 6 | 66.49 +/- 0.31 | 80.78 +/- 0.43 | 34.10 +/- 3.63 | 33.55 +/- 3.21 | 92.00 +/- 0.49 | 24.83 +/- 2.10 | 37.50 +/- 3.22 |
 
 ## Files and units
 
-- `results_all_seeds.csv`: all six reported dataset/seed records, with actual seed IDs.
-- `results_mean_std.csv`: one mean/SD row per dataset; `seeds` records its exact seed set.
+- `results_all_seeds.csv`: six records with separate `run_id` and `training_seed` columns.
+- `results_mean_std.csv`: one mean/SD row per dataset; `run_ids` and `training_seeds` record both ID sets.
 - `panoradio/results_seed*.csv` and `hfdigital/results_seed*.csv`: individual records.
 - `*/perturbations_seed*.csv`: six perturbations per seed; rates use fractions in [0,1].
 - `selection_manifest.json`: seed selection, protocol, and verification provenance.

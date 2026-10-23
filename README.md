@@ -16,22 +16,22 @@ CAPE/
     panoradio/seed3.pt
   protocols/               固定样本划分、权重转换审计、参考运行环境
   results/
-    results_all_seeds.csv   两个数据集的六条结果，保留实际 seed 编号
+    results_all_seeds.csv   六条结果，分别记录 run_id 与真实 training_seed
     results_mean_std.csv    各自三个指定种子的均值与样本标准差
     panoradio/             Seed 1、2、3 的结果与逐扰动 CSV
-    hfdigital/             Seed 1、3、6 的结果与逐扰动 CSV
+    hfdigital/             文件编号 seed1、seed2、seed3 的结果与逐扰动 CSV
     selection_manifest.json 种子选择、协议与来源摘要
   figures/                 绘图程序生成的 PDF / PNG
   train.py                 CAPE 从头训练
   evaluate.py              使用最终权重重评估
   predict.py               对新 I/Q 数据做识别与拒识
   show_results.py          显示指定种子的结果表
-  plot_results.py          按各数据集实际种子集合绘图
+  plot_results.py          按展示编号读取 CSV，图例保留真实训练种子
   verify_release.py        权重加载、模型前向和文件完整性核验
   requirements.txt
 ```
 
-公开仓库仅提供 **Panoradio HF 的 Seed 1、2、3** 三个 Full CAPE 权重。结果表包含 Panoradio HF Seed 1、2、3 和 HF-Digital Seed 1、3、6。HF-Digital 未上传权重；逐样本评分和训练日志也不随仓库提供。没有保存消融权重、其他方法实现、其他方法权重、预训练代码或独立预训练权重。
+公开仓库仅提供 **Panoradio HF 的 Seed 1、2、3** 三个 Full CAPE 权重。两个数据集的结果文件均命名为 seed1、seed2、seed3；这些文件后缀为展示编号。CSV 的 `run_id` 对应文件编号，`training_seed` 保存实际训练种子：Panoradio 为 1、2、3，HF-Digital 为 1、3、6。HF-Digital 未上传权重；逐样本评分和训练日志也不随仓库提供。没有保存消融权重、其他方法实现、其他方法权重、预训练代码或独立预训练权重。
 
 **HF-Digital 的 1、3、6 是查看 Seed 1–6 结果后指定的事后子集，并非预先固定的随机种子集合。** Seed 2、4、5 也已完成，但不在此次汇总中。该均值与标准差仅描述指定子集，不能写成全部已完成种子的表现或无偏的随机种子稳定性估计。Panoradio 保留既有的 1、2、3 报告子集，也不作预注册声明。详见 `results/README.md`。
 
@@ -58,7 +58,7 @@ python -u show_results.py
 
 `verify_release.py` 会检查 Panoradio 的三个最终权重、模型前向计算、文件校验和、逐种子 CSV 一致性、四组 H4 聚合和样本标准差。它不会训练模型。没有原始逐样本评分时，它不能独立重算 AUROC 或 Unknown F1，并会明确提示这一限制。
 
-`plot_results.py` 按 `results/selection_manifest.json` 中各数据集的实际种子编号读取 CSV。现有 `figures/` 图片未为本次子集重新生成；需要新图时可运行 `python -u plot_results.py --output-dir figures_selected`。重新评估可按第 5 节生成新的结果，默认写入 `evaluation/panoradio/`。
+`plot_results.py` 按 `results/selection_manifest.json` 中的展示编号读取 CSV，并在图例注明真实训练种子。现有 `figures/` 图片未为本次子集重新生成；需要新图时可运行 `python -u plot_results.py --output-dir figures_selected`。重新评估可按第 5 节生成新的结果，默认写入 `evaluation/panoradio/`。
 
 ## 4. 原始数据
 

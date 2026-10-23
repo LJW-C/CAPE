@@ -29,26 +29,28 @@ def main():
     summaries = read_csv(ROOT / "results/results_mean_std.csv") if has_results else []
     selection_path = ROOT / "results/selection_manifest.json"
     selection = read_json(selection_path) if selection_path.is_file() else {}
-    reported_seeds = selection.get("reported_seeds", {name: [1, 2, 3] for name in manifest["datasets"]})
+    reported_runs = selection.get("reported_run_ids", {name: [1, 2, 3] for name in manifest["datasets"]})
+    training_seeds = selection.get("training_seeds", reported_runs)
     has_raw_scores = (ROOT / "results/raw").is_dir()
     if has_results:
-        expected_pairs = {(name, seed) for name, seeds in reported_seeds.items() for seed in seeds}
-        actual_pairs = [(row["dataset"], int(row["seed"])) for row in all_reported]
+        expected_pairs = {(name, run_id) for name, runs in reported_runs.items() for run_id in runs}
+        actual_pairs = [(row["dataset"], int(row["run_id"])) for row in all_reported]
         assert len(actual_pairs) == len(set(actual_pairs)) and set(actual_pairs) == expected_pairs
-        assert len(summaries) == len(reported_seeds)
-        assert {row["dataset"] for row in summaries} == set(reported_seeds)
+        assert len(summaries) == len(reported_runs)
+        assert {row["dataset"] for row in summaries} == set(reported_runs)
     all_recomputed = []
     for dataset in manifest["datasets"]:
         if not has_results and dataset not in weight_datasets:
             continue
         recomputed = []
-        for seed in reported_seeds.get(dataset, [1, 2, 3]):
-            path = ROOT / f"checkpoints/{dataset}/seed{seed}.pt"
+        for run_id in reported_runs.get(dataset, [1, 2, 3]):
+            training_seed = training_seeds[dataset][reported_runs[dataset].index(run_id)]
+            path = ROOT / f"checkpoints/{dataset}/seed{training_seed}.pt"
             if dataset in weight_datasets:
                 model, payload = load_checkpoint(path)
-                audit = next(a for a in manifest["audits"] if a["dataset"] == dataset and a["seed"] == seed)
+                audit = next(a for a in manifest["audits"] if a["dataset"] == dataset and a["seed"] == training_seed)
                 assert sha256(path) == audit["release_checkpoint_sha256"]
-                assert payload["seed"] == seed
+                assert payload["seed"] == training_seed
                 config = payload["config"]
                 with torch.no_grad():
                     output, semantic, channel = model(torch.randn(2, 2, config["input_length"]))
@@ -59,18 +61,20 @@ def main():
             else:
                 config = read_json(ROOT / f"configs/{dataset}.json")
             if not has_results:
-                print(f"PASS {dataset} seed {seed}: checkpoint integrity and model forward pass")
+                print(f"PASS {dataset} training seed {training_seed}: checkpoint integrity and model forward pass")
                 continue
-            archived = next(r for r in all_reported if r["dataset"] == dataset and int(r["seed"]) == seed)
+            archived = next(r for r in all_reported if r["dataset"] == dataset and int(r["run_id"]) == run_id)
+            assert int(archived["training_seed"]) == training_seed
             assert archived["method"] == "CAPE" and archived["metric_units"] == "percent"
             assert all(np.isfinite(float(archived[key])) and 0 <= float(archived[key]) <= 100 for key in METRICS)
             if not has_raw_scores:
-                individual = read_csv(ROOT / f"results/{dataset}/results_seed{seed}.csv")
+                individual = read_csv(ROOT / f"results/{dataset}/results_seed{run_id}.csv")
                 assert len(individual) == 1 and individual[0] == archived
-                conditions = read_csv(ROOT / f"results/{dataset}/perturbations_seed{seed}.csv")
+                conditions = read_csv(ROOT / f"results/{dataset}/perturbations_seed{run_id}.csv")
                 assert [row["perturbation"] for row in conditions] == [item["name"] for item in config["perturbations"]]
                 for condition in conditions:
-                    assert condition["dataset"] == dataset and int(condition["seed"]) == seed
+                    assert condition["dataset"] == dataset and int(condition["run_id"]) == run_id
+                    assert int(condition["training_seed"]) == training_seed
                     assert condition["metric_units"] == "fraction"
                     rates = [float(condition[key]) for key in ("KAR_clean", "KAR_deg", "URR_clean", "URR_deg")]
                     assert all(np.isfinite(rate) and 0 <= rate <= 1 for rate in rates)
@@ -78,11 +82,11 @@ def main():
                 for key in ("KAR_clean", "KAR_deg", "URR_clean", "URR_deg", "H4"):
                     average = 100 * np.mean([float(row[key]) for row in conditions])
                     assert abs(average - float(archived[key + "_avg"])) < 1e-9
-                recomputed.append({"dataset": dataset, "seed": seed,
+                recomputed.append({"dataset": dataset, "seed": run_id,
                                    **{key: float(archived[key]) for key in METRICS}})
-                print(f"PASS {dataset} seed {seed}: individual CSV and four-group aggregation")
+                print(f"PASS {dataset} run {run_id} (training seed {training_seed}): CSV and four-group aggregation")
                 continue
-            directory = ROOT / f"results/raw/{dataset}/seed{seed}"
+            directory = ROOT / f"results/raw/{dataset}/seed{training_seed}"
             with np.load(directory / "validation_scores.npz", allow_pickle=False) as pack:
                 assert np.isin(pack["labels"], config["known_classes"]).all()
                 threshold, _ = calibrate_known(pack["scores"], config["target_fpr"])
@@ -95,19 +99,19 @@ def main():
             clean = measured("clean_scores.npz")
             conditions = [four_group(clean, measured(f"scores_condition{i}.npz"))
                           for i in range(len(config["perturbations"]))]
-            row = percentage_row({"dataset": dataset, "seed": seed, **summarize_conditions(clean, conditions)})
-            archived = next(r for r in all_reported if r["dataset"] == dataset and int(r["seed"]) == seed)
+            row = percentage_row({"dataset": dataset, "seed": run_id, **summarize_conditions(clean, conditions)})
             assert all(abs(row[k] - float(archived[k])) < 1e-9 for k in METRICS)
             recomputed.append(row)
             scope = "weights and archived scores" if dataset in weight_datasets else "archived scores (weights not published)"
-            print(f"PASS {dataset} seed {seed}: {scope}, calibration, clean metrics, six-condition H4")
+            print(f"PASS {dataset} run {run_id} (training seed {training_seed}): {scope}, calibration, clean metrics, six-condition H4")
         if not has_results:
             continue
         computed = aggregate(recomputed)
         reference = next(r for r in summaries if r["dataset"] == dataset)
         assert reference["metric_units"] == "percent" and int(reference["std_ddof"]) == 1
-        assert int(reference["n_seeds"]) == len(reported_seeds[dataset])
-        assert [int(value) for value in reference["seeds"].split()] == reported_seeds[dataset]
+        assert int(reference["n_seeds"]) == len(reported_runs[dataset])
+        assert [int(value) for value in reference["run_ids"].split()] == reported_runs[dataset]
+        assert [int(value) for value in reference["training_seeds"].split()] == training_seeds[dataset]
         for key in METRICS:
             for suffix in ("_mean", "_std"):
                 assert abs(computed[key + suffix] - float(reference[key + suffix])) < 1e-9
@@ -123,7 +127,7 @@ def main():
         print("PASS: reported CSVs, per-perturbation H4, and sample standard deviations (ddof=1) are internally consistent.")
         print("SKIP: raw scores are not published; AUROC and Unknown F1 were not independently recomputed here.")
         if selection.get("selection", {}).get("hfdigital", {}).get("timing") == "post_hoc_requested_subset":
-            print(f"NOTE: HF-Digital seeds {reported_seeds['hfdigital']} are a post hoc requested subset.")
+            print(f"NOTE: HF-Digital runs {reported_runs['hfdigital']} use post hoc selected training seeds {training_seeds['hfdigital']}.")
     else:
         print("SKIP: result CSVs and raw scores are not published; metrics were not verified.")
     assert not any(name == "src" or name.startswith("src.") or name.startswith("scripts.")

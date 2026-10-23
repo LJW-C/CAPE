@@ -15,16 +15,16 @@ def render(dataset="all"):
         raise SystemExit("Result CSVs are not included in this repository. Supply your own local results before using this script.")
     rows = read_csv(ROOT / "results/results_all_seeds.csv")
     summary = read_csv(ROOT / "results/results_mean_std.csv")
-    lines = ["| Dataset | Seed | " + " | ".join(label for _, label in DISPLAY) + " |",
-             "|---|---|" + "---:|" * len(DISPLAY)]
+    lines = ["| Dataset | Run ID | Training Seed | " + " | ".join(label for _, label in DISPLAY) + " |",
+             "|---|---|---|" + "---:|" * len(DISPLAY)]
     for name in dict.fromkeys(row["dataset"] for row in rows):
         if dataset != "all" and name != dataset:
             continue
         for row in (r for r in rows if r["dataset"] == name):
-            lines.append("| " + name + " | " + row["seed"] + " | "
+            lines.append("| " + name + " | " + row["run_id"] + " | " + row["training_seed"] + " | "
                          + " | ".join(f"{float(row[key]):.2f}" for key, _ in DISPLAY) + " |")
         row = next(r for r in summary if r["dataset"] == name)
-        lines.append("| " + name + " | mean +/- SD | " + " | ".join(
+        lines.append("| " + name + " | mean +/- SD | " + row["training_seeds"] + " | " + " | ".join(
             f"{float(row[key+'_mean']):.2f} +/- {float(row[key+'_std']):.2f}" for key, _ in DISPLAY) + " |")
     return "\n".join(lines)
 
