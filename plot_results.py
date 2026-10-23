@@ -59,6 +59,9 @@ def main():
     args.output_dir.mkdir(parents=True, exist_ok=True)
     style()
     rows = read_csv(ROOT / "results/results_all_seeds.csv")
+    selection_path = ROOT / "results/selection_manifest.json"
+    reported_seeds = read_json(selection_path)["reported_seeds"] if selection_path.is_file() else {
+        name: [1, 2, 3] for name in NAMES}
     names = [name for name in NAMES if args.dataset in ("all", name)
              and any(row["dataset"] == name for row in rows)]
     fields = [("known_acc", "Known Acc."), ("unknown_auroc", "AUROC"),
@@ -66,9 +69,9 @@ def main():
     fig, axes = plt.subplots(1, len(names), figsize=(6.2 * len(names), 4.2), squeeze=False,
                              constrained_layout=True)
     for axis, name in zip(axes[0], names):
-        selected = [r for r in rows if r["dataset"] == name]
-        if sorted(int(r["seed"]) for r in selected) != [1, 2, 3]:
-            raise ValueError("Expected exactly seeds 1, 2, and 3")
+        selected = sorted((r for r in rows if r["dataset"] == name), key=lambda row: int(row["seed"]))
+        if len(selected) != 3 or [int(r["seed"]) for r in selected] != reported_seeds[name]:
+            raise ValueError(f"Expected the three registered seeds for {name}: {reported_seeds[name]}")
         values = np.asarray([[float(row[key]) for key, _ in fields] for row in selected])
         x = np.arange(len(fields))
         for index, marker in enumerate(("o", "s", "^")):
@@ -92,7 +95,7 @@ def main():
     metrics = [("KAR_deg", "KAR-deg", "#0072B2", "o"),
                ("URR_deg", "URR-deg", "#E64B35", "s"), ("H4", "H4", "#00A087", "^")]
     for axis, name in zip(axes[0], names):
-        groups = [perturbation_rows(name, seed) for seed in (1, 2, 3)]
+        groups = [perturbation_rows(name, seed) for seed in reported_seeds[name]]
         labels = [r["perturbation"] for r in groups[0]]
         if any([r["perturbation"] for r in group] != labels for group in groups):
             raise ValueError("Perturbation order differs across seeds")
