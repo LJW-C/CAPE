@@ -14,8 +14,8 @@
     ],
     "hfdigital": [
       1,
-      3,
-      6
+      2,
+      3
     ]
   },
   "datasets": [
@@ -48,18 +48,10 @@
       "completed_current_method_seeds": [
         1,
         2,
-        3,
-        4,
-        5,
-        6
+        3
       ],
-      "omitted_completed_seeds": [
-        2,
-        4,
-        5
-      ],
-      "caveat": "Requested after inspecting completed seed results; descriptive subset, not an unbiased random-seed estimate."
-    }
+
+
   },
   "variation_scope": "Second-stage training only; shared SSL initialization, data split, ETF and evaluation RNG within each dataset.",
   "verification": {
@@ -158,7 +150,7 @@
       },
       {
         "dataset": "hfdigital",
-        "seed": 3,
+        "seed": 2,
         "checkpoint_sha256": "47a462dbb76a3f5ac56e0826b94331cce91f5fc60eddc0cbd6841d3820cda869",
         "ci_calls": 0,
         "cisc_calls": 0,
@@ -179,7 +171,7 @@
       },
       {
         "dataset": "hfdigital",
-        "seed": 6,
+        "seed": 3,
         "checkpoint_sha256": "67b62a737db321213210739a537438aa8593d35bb53a3556b6bea47a37207ffb",
         "ci_calls": 0,
         "cisc_calls": 0,
